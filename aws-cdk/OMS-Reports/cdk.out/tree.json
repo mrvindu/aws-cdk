@@ -1,0 +1,321 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree"
+      },
+      "OmsReportsStack": {
+        "id": "OmsReportsStack",
+        "path": "OmsReportsStack",
+        "children": {
+          "VPC": {
+            "id": "VPC",
+            "path": "OmsReportsStack/VPC",
+            "children": {
+              "PrivateSubnet1": {
+                "id": "PrivateSubnet1",
+                "path": "OmsReportsStack/VPC/PrivateSubnet1"
+              },
+              "PrivateSubnet2": {
+                "id": "PrivateSubnet2",
+                "path": "OmsReportsStack/VPC/PrivateSubnet2"
+              },
+              "PrivateSubnet3": {
+                "id": "PrivateSubnet3",
+                "path": "OmsReportsStack/VPC/PrivateSubnet3"
+              }
+            }
+          },
+          "LambdaSecurityGroup": {
+            "id": "LambdaSecurityGroup",
+            "path": "OmsReportsStack/LambdaSecurityGroup",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "OmsReportsStack/LambdaSecurityGroup/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                  "aws:cdk:cloudformation:props": {
+                    "groupDescription": "OMS-Reports",
+                    "groupName": "OMS-Reports-Function",
+                    "securityGroupEgress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "description": "Allow all outbound traffic by default",
+                        "ipProtocol": "-1"
+                      }
+                    ],
+                    "securityGroupIngress": [
+                      {
+                        "cidrIp": {
+                          "Fn::ImportValue": "InternalServicesIPv4CIDRBlock"
+                        },
+                        "ipProtocol": "tcp",
+                        "fromPort": 80,
+                        "toPort": 80,
+                        "description": "VPC HTTP Access"
+                      }
+                    ],
+                    "vpcId": {
+                      "Fn::ImportValue": "InternalServicesVPCID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "LambdaRole": {
+            "id": "LambdaRole",
+            "path": "OmsReportsStack/LambdaRole",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "OmsReportsStack/LambdaRole/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "managedPolicyArns": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/service-role/AWSLambdaENIManagementAccess"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/AWSXrayWriteOnlyAccess"
+                          ]
+                        ]
+                      }
+                    ],
+                    "roleName": "IamRoleOMS-Reports-UnknownReturnsReport-cdk"
+                  }
+                }
+              }
+            }
+          },
+          "MyFunction": {
+            "id": "MyFunction",
+            "path": "OmsReportsStack/MyFunction",
+            "children": {
+              "Code": {
+                "id": "Code",
+                "path": "OmsReportsStack/MyFunction/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "OmsReportsStack/MyFunction/Code/Stage"
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "OmsReportsStack/MyFunction/Code/AssetBucket"
+                  }
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "OmsReportsStack/MyFunction/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "code": {
+                      "s3Bucket": {
+                        "Ref": "AssetParametersbc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6S3BucketDC34FB64"
+                      },
+                      "s3Key": {
+                        "Fn::Join": [
+                          "",
+                          [
+                            {
+                              "Fn::Select": [
+                                0,
+                                {
+                                  "Fn::Split": [
+                                    "||",
+                                    {
+                                      "Ref": "AssetParametersbc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6S3VersionKeyABDAA9F6"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "Fn::Select": [
+                                1,
+                                {
+                                  "Fn::Split": [
+                                    "||",
+                                    {
+                                      "Ref": "AssetParametersbc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6S3VersionKeyABDAA9F6"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        ]
+                      }
+                    },
+                    "handler": "index.handler",
+                    "role": {
+                      "Fn::GetAtt": [
+                        "LambdaRole3A44B857",
+                        "Arn"
+                      ]
+                    },
+                    "runtime": "nodejs10.x",
+                    "description": "OMS Reports",
+                    "environment": {
+                      "variables": {
+                        "BUCKET_NAME": "plt-staging.finance-reporting"
+                      }
+                    },
+                    "functionName": "OMS-Reports-UnknownReturnsReport-cdk",
+                    "memorySize": 128,
+                    "timeout": 3,
+                    "vpcConfig": {
+                      "subnetIds": [
+                        {
+                          "Fn::ImportValue": "InternalServicesSubnetPrivate1a"
+                        },
+                        {
+                          "Fn::ImportValue": "InternalServicesSubnetPrivate1b"
+                        },
+                        {
+                          "Fn::ImportValue": "InternalServicesSubnetPrivate1c"
+                        }
+                      ],
+                      "securityGroupIds": [
+                        {
+                          "Fn::GetAtt": [
+                            "LambdaSecurityGroup0BD9FC99",
+                            "GroupId"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "AllowEventRuleOmsReportsStackRuleCA01162F": {
+                "id": "AllowEventRuleOmsReportsStackRuleCA01162F",
+                "path": "OmsReportsStack/MyFunction/AllowEventRuleOmsReportsStackRuleCA01162F",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunction",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "MyFunction3BAA72D1",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "events.amazonaws.com",
+                    "sourceArn": {
+                      "Fn::GetAtt": [
+                        "Rule4C995B7F",
+                        "Arn"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "AssetParameters": {
+            "id": "AssetParameters",
+            "path": "OmsReportsStack/AssetParameters",
+            "children": {
+              "bc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6": {
+                "id": "bc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6",
+                "path": "OmsReportsStack/AssetParameters/bc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6",
+                "children": {
+                  "S3Bucket": {
+                    "id": "S3Bucket",
+                    "path": "OmsReportsStack/AssetParameters/bc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6/S3Bucket"
+                  },
+                  "S3VersionKey": {
+                    "id": "S3VersionKey",
+                    "path": "OmsReportsStack/AssetParameters/bc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6/S3VersionKey"
+                  },
+                  "ArtifactHash": {
+                    "id": "ArtifactHash",
+                    "path": "OmsReportsStack/AssetParameters/bc8acde74020037a927cca49b7072254745f48b9bcde1b6f3a1fd1622965c8c6/ArtifactHash"
+                  }
+                }
+              }
+            }
+          },
+          "Rule": {
+            "id": "Rule",
+            "path": "OmsReportsStack/Rule",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "OmsReportsStack/Rule/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Events::Rule",
+                  "aws:cdk:cloudformation:props": {
+                    "scheduleExpression": "cron(0 0 * * ? *)",
+                    "state": "ENABLED",
+                    "targets": [
+                      {
+                        "id": "Target0",
+                        "arn": {
+                          "Fn::GetAtt": [
+                            "MyFunction3BAA72D1",
+                            "Arn"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
